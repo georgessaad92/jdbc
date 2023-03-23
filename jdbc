@@ -1,0 +1,105 @@
+package projj12;
+
+import java.awt.*;
+
+import java.awt.event.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.Statement;
+
+
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+
+
+public class JDBCGr_Model extends JFrame {
+	
+	 
+	 JTable text=new JTable();
+	
+	JButton j=new JButton("Query");
+	JTextField field=new JTextField(25);
+	DefaultTableModel model =new DefaultTableModel();
+	Connection conn=null;
+    Statement instruction = null;	
+	ResultSet resultat = null;
+
+	public JDBCGr_Model(){
+	
+		JPanel panel1=new JPanel();
+		JPanel panel2=new JPanel();
+		setLayout(new GridLayout(2,1));
+	
+		JScrollPane sp = new JScrollPane(text);   
+		panel1.add(sp);
+	
+		panel2.add(j);
+		panel2.add(field);
+		add(panel1);
+		add(panel2);
+
+		try{
+		Class.forName("com.mysql.jdbc.Driver" );
+		String url="jdbc:mysql://localhost:3306/DB1";
+	 	String user="root";
+	 	System.out.println("Conn");
+ 	    	conn = DriverManager.getConnection(url, user, "12345678" );
+		
+ 	    	instruction = conn.createStatement();
+	}
+  	catch (Exception ex) {
+	  System.out.println("Echec de chargement du driver" );
+		   	}
+
+j.addActionListener(new ActionListener(){
+
+	public void actionPerformed(ActionEvent arg0) {
+		model =new DefaultTableModel();
+		String query="select * from client where name =\""+field.getText()+"\";"; 
+		System.out.println(query);
+		try{
+			
+		resultat = instruction.executeQuery(query);
+		
+		ResultSetMetaData rsmd = resultat.getMetaData();
+		
+		int NumOfCol=rsmd.getColumnCount();
+		String[] s=new String[NumOfCol];
+		
+		for(int i=0;i<NumOfCol;i++)
+		   s[i]=rsmd.getColumnName(i+1);
+		  
+		  model.setColumnIdentifiers(s);
+	
+		  while (resultat.next()) {
+		
+		int x=resultat.getInt(1);
+		String r=resultat.getString(2);
+		System.out.println(x+" "+r);
+		
+		model.addRow(new Object[]{x,r});	
+		}
+		text.setModel(model);
+		}
+	  	catch (Exception ex) {
+		  System.out.println("Echec de requete" );
+			   	}
+
+	}});
+	
+	}
+
+
+	public static void main(String[] args) { 
+		JDBCGr_Model frame = new JDBCGr_Model(); 
+		 frame.setBackground(Color.white);
+		 frame.setTitle("JTable_Jdbc"); 
+		 frame.setSize(500, 500); 
+		 frame.setLocationRelativeTo(null); // Center the frame 
+		 frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); 
+		 frame.setVisible(true);    }
+
+
+}
